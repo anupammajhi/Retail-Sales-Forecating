@@ -121,15 +121,3 @@ avgprofit <-  lapply(s, function(x) mean(x$Profit))
 top <- data.frame(cbind(cv, profit, avgprofit))
 
 
-top <- top[order(-unlist(profit)),]
-
-
-
-write.csv(APAC.Consumer, 'APAC.Consumer.csv')
-write.csv(EU.Consumer, 'EU.Consumer.csv')
-
-
-# From the CV calculations we can see that the two most consistent and most profitable buckets are, 
-#   1. APAC.Consumer
-#   2. EU.Consumer
-
