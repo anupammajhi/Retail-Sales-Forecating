@@ -133,14 +133,3 @@ write.csv(EU.Consumer, 'EU.Consumer.csv')
 #   1. APAC.Consumer
 #   2. EU.Consumer
 
-
-
-#Quick View of Both segments
-ts.plot(EU.Consumer, gpars = list(col = rainbow(4)), main = 'EU Consumer')
-ts.plot(APAC.Consumer, gpars = list(col = rainbow(5)), main = 'APAC Consumer')
-
-
-#____________________________________________________________________________-
-
-
-#---------------------------------------------
