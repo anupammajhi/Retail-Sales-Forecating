@@ -80,3 +80,78 @@ store_clean[which(store_clean$Profit > 1500), 'Profit'] <- 1500
 quantile(store_clean$Profit, seq(0,1,0.02))
 
 
+
+# Splitting for the 3 levels of Segment, for each of the 7 levels of Market
+
+
+seg <- split(store_clean, interaction(store_clean$Market,store_clean$Segment))
+
+list2env(seg, .GlobalEnv)   #shows the datasets present in the list in the Global Environment
+
+
+
+
+
+# Aggregating Profit, Quantity, Sales, monthwise across the list
+
+s <-lapply(seg, function(x) {aggregate(cbind(Profit,Quantity,Sales) ~ Date, data = x, sum)})
+
+s
+
+list2env(s, .GlobalEnv)
+
+
+#Creating multiple time series objects
+
+tslist <- ts(s)
+
+
+
+#Finding the Coeeficient of Variation for the 21 buckets. We calculate CV on Profits to detrmine the most profitable zones
+
+cv <- lapply(s, function(x) {100*sd(x$Profit)/mean(x$Profit)})
+
+cv
+
+profit <- lapply(s, function(x) sum(x$Profit))
+
+avgprofit <-  lapply(s, function(x) mean(x$Profit))
+
+
+top <- data.frame(cbind(cv, profit, avgprofit))
+
+
+top <- top[order(-unlist(profit)),]
+
+
+
+write.csv(APAC.Consumer, 'APAC.Consumer.csv')
+write.csv(EU.Consumer, 'EU.Consumer.csv')
+
+
+# From the CV calculations we can see that the two most consistent and most profitable buckets are, 
+#   1. APAC.Consumer
+#   2. EU.Consumer
+
+
+
+#Quick View of Both segments
+ts.plot(EU.Consumer, gpars = list(col = rainbow(4)), main = 'EU Consumer')
+ts.plot(APAC.Consumer, gpars = list(col = rainbow(5)), main = 'APAC Consumer')
+
+
+#____________________________________________________________________________-
+
+
+#---------------------------------------------
+#   Forecasting for Sales - APAC.Consumer
+#---------------------------------------------
+
+
+
+#Naming Convention 
+
+# This is the naming convention that will be used to name the data frames
+
+# APAC.Consumer Sales - apacs
+# APAC.Consumer Quantity - apacq
