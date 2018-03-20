@@ -182,15 +182,3 @@ apacs_smooth <- filter(apacs_ts,
                          filter=rep(1/(2*w+1),(2*w+1)), 
                          method='convolution', sides=2)
 
-#Smoothing left end of the time series
-
-diff <- apacs_smooth[w+2] - apacs_smooth[w+1]
-for (i in seq(w,1,-1)) {
-    apacs_smooth[i] <- apacs_smooth[i+1] - diff
-}
-
-#Smoothing right end of the time series
-
-n <- length(apacs_ts)
-diff <- apacs_smooth[n-w] - apacs_smooth[n-w-1]
-for (i in seq(n-w+1, n)) {
