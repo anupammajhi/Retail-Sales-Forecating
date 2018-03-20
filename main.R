@@ -121,3 +121,76 @@ avgprofit <-  lapply(s, function(x) mean(x$Profit))
 top <- data.frame(cbind(cv, profit, avgprofit))
 
 
+top <- top[order(-unlist(profit)),]
+
+
+
+write.csv(APAC.Consumer, 'APAC.Consumer.csv')
+write.csv(EU.Consumer, 'EU.Consumer.csv')
+
+
+# From the CV calculations we can see that the two most consistent and most profitable buckets are, 
+#   1. APAC.Consumer
+#   2. EU.Consumer
+
+
+
+#Quick View of Both segments
+ts.plot(EU.Consumer, gpars = list(col = rainbow(4)), main = 'EU Consumer')
+ts.plot(APAC.Consumer, gpars = list(col = rainbow(5)), main = 'APAC Consumer')
+
+
+#____________________________________________________________________________-
+
+
+#---------------------------------------------
+#   Forecasting for Sales - APAC.Consumer
+#---------------------------------------------
+
+
+
+#Naming Convention 
+
+# This is the naming convention that will be used to name the data frames
+
+# APAC.Consumer Sales - apacs
+# APAC.Consumer Quantity - apacq
+# EU.Consumer Sales - eus
+# EU.Consumer Quantity - euq
+
+
+# So we need to create 8 models.
+# We will start by by predicting Sales for APAC Consumer
+
+apacs <- data.frame(cbind(as.numeric(1:nrow(APAC.Consumer)),APAC.Consumer$Sales))
+
+colnames(apacs) <- c('Months', 'Sales')
+
+apacs_total <- ts(apacs$Sales)
+apacs_in <- apacs[1:42,]
+apacs_out <- apacs[43:48,]
+
+apacs_ts <- ts(apacs_in$Sales)
+plot(apacs_ts)
+
+
+
+#Smoothing the series - Moving Average Smoothing
+
+w <- 1
+apacs_smooth <- filter(apacs_ts, 
+                         filter=rep(1/(2*w+1),(2*w+1)), 
+                         method='convolution', sides=2)
+
+#Smoothing left end of the time series
+
+diff <- apacs_smooth[w+2] - apacs_smooth[w+1]
+for (i in seq(w,1,-1)) {
+    apacs_smooth[i] <- apacs_smooth[i+1] - diff
+}
+
+#Smoothing right end of the time series
+
+n <- length(apacs_ts)
+diff <- apacs_smooth[n-w] - apacs_smooth[n-w-1]
+for (i in seq(n-w+1, n)) {
