@@ -420,14 +420,3 @@ for (i in seq(w,1,-1)) {
 
 #Smoothing right end of the time series
 
-n <- length(apacq_ts)
-diff <- apacq_smooth[n-w] - apacq_smooth[n-w-1]
-for (i in seq(n-w+1, n)) {
-    apacq_smooth[i] <- apacq_smooth[i-1] + diff
-}
-
-#Plot the smoothed time series
-
-timevals_in <- apacq_in$Months
-
-lines(apacq_smooth, col="red", lwd=2)
