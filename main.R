@@ -431,14 +431,3 @@ for (i in seq(n-w+1, n)) {
 timevals_in <- apacq_in$Months
 
 lines(apacq_smooth, col="red", lwd=2)
-
-
-#Trying Holt Winters
-
-plot(apacq_ts)
-
-cols <- c("red", "blue", "green", "black")
-alphas <- c(0.02, 0.1, 0.3,0.5,0.8)
-labels <- c(paste("alpha =", alphas), "Original")
-for (i in seq(1,length(alphas))) {
-    apacq_smoothhw <- HoltWinters(apacq_ts, alpha=alphas[i],
