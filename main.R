@@ -322,3 +322,63 @@ resi_auto_arima <- apacs_ts - fitted(autoarima)
 
 adf.test(resi_auto_arima,alternative = "stationary")
 kpss.test(resi_auto_arima)
+
+#Also, let's evaluate the model using MAPE
+fcast_auto_arima <- predict(autoarima, n.ahead = 6)
+
+MAPE_auto_arima <- accuracy(fcast_auto_arima$pred,apacs_out[,2])[5]
+MAPE_auto_arima
+
+#Mape Value - 27.78
+#             -----
+
+
+#Lastly, let's plot the predictions along with original values, to
+#get a visual feel of the fit
+
+auto_arima_pred <- c(fitted(autoarima),ts(fcast_auto_arima$pred))
+plot(apacs_total, col = "black", main = "Forecast for Sales - APAC.Consumer", ylab = 'Sales', xlab = 'Months')
+lines(auto_arima_pred, col = "red")
+rect(xleft = 42, xright= 48, ybottom = 10000, ytop = 85000, density = 10, col = 'grey')
+
+
+
+
+# The fit from Classical Decomposition looks better, so we will use that model for the final forecast.
+
+
+# Forecasting for the next 6 Months
+
+#Local Component
+
+f_local <-  predict(armafit, n.ahead = 12)  
+
+f_local$pred
+
+f_fut <- f_local$pred[7:12]
+
+
+# Global Component
+
+future <- data.frame(Months = 49:54)
+
+global <- predict(lmfit, future)
+
+
+# Final Model = Local + Global
+
+Forecast <- global +f_fut
+
+final_forecast_apacs <- data.frame(cbind(Months = 49:54, Forecast))
+
+
+# Visualising the Forecasted Sales
+
+colnames(final_forecast_apacs)[2] <- 'Sales'
+final <- rbind(apacs, final_forecast_apacs)
+plot(final, type = 'l', main = 'Forecasted Sales for APAC Consumer')
+rect(xleft = 49, xright= 54, ybottom = 10000, ytop = 85000, density = 10, col = 'red')
+
+
+
+
