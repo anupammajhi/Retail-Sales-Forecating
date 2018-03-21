@@ -182,3 +182,65 @@ apacs_smooth <- filter(apacs_ts,
                          filter=rep(1/(2*w+1),(2*w+1)), 
                          method='convolution', sides=2)
 
+#Smoothing left end of the time series
+
+diff <- apacs_smooth[w+2] - apacs_smooth[w+1]
+for (i in seq(w,1,-1)) {
+    apacs_smooth[i] <- apacs_smooth[i+1] - diff
+}
+
+#Smoothing right end of the time series
+
+n <- length(apacs_ts)
+diff <- apacs_smooth[n-w] - apacs_smooth[n-w-1]
+for (i in seq(n-w+1, n)) {
+    apacs_smooth[i] <- apacs_smooth[i-1] + diff
+}
+
+#Plot the smoothed time series
+
+timevals_in <- apacs_in$Months
+
+lines(apacs_smooth, col="red", lwd=2)
+
+
+#Trying Holt Winters
+
+plot(apacs_ts)
+
+cols <- c("red", "blue", "green", "black")
+alphas <- c(0.02, 0.1, 0.3,0.5,0.8)
+labels <- c(paste("alpha =", alphas), "Original")
+for (i in seq(1,length(alphas))) {
+    apacs_smoothhw <- HoltWinters(apacs_ts, alpha=alphas[i],
+                                  beta=FALSE, gamma=FALSE)
+    
+    lines(fitted(apacs_smoothhw)[,1], col=cols[i], lwd=2)
+}
+
+legend("bottomleft", labels, col=cols, lwd=2)
+
+plot(apacs_ts)
+apacs_smoothhw <- HoltWinters(apacs_ts, alpha=0.5,
+                            beta=FALSE, gamma=FALSE)
+
+lines(fitted(apacs_smoothhw)[,1], col='red', lwd=2)
+
+
+# Clearly Moving average does better smoothing as compared to Holt Winter.Hence, we will use Moving Average Smoothing
+
+
+#Building a model on the smoothed time series using classical decomposition
+#First, let's convert the time series to a dataframe
+
+apacs_smoothdf <- as.data.frame(cbind(timevals_in, as.vector(apacs_smooth)))
+colnames(apacs_smoothdf) <- c('Months', 'Sales')
+
+#Now, let's fit a  model with trend and seasonality to the data
+#There appears to be little seasonality in the data. Trying various degree equations
+
+lmfit <- lm(Sales ~  sin(0.5*Months) * poly(Months,1) +cos(0.5*Months)*poly(Months,1), data=apacs_smoothdf)
+global_pred <- predict(lmfit, Months=timevals_in)
+summary(global_pred)
+
+plot(apacs_ts)
