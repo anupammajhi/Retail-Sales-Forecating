@@ -369,16 +369,3 @@ global <- predict(lmfit, future)
 
 Forecast <- global +f_fut
 
-final_forecast_apacs <- data.frame(cbind(Months = 49:54, Forecast))
-
-
-# Visualising the Forecasted Sales
-
-colnames(final_forecast_apacs)[2] <- 'Sales'
-final <- rbind(apacs, final_forecast_apacs)
-plot(final, type = 'l', main = 'Forecasted Sales for APAC Consumer')
-rect(xleft = 49, xright= 54, ybottom = 10000, ytop = 85000, density = 10, col = 'red')
-
-
-
-
