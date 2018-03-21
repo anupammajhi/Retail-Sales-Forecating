@@ -369,3 +369,76 @@ global <- predict(lmfit, future)
 
 Forecast <- global +f_fut
 
+final_forecast_apacs <- data.frame(cbind(Months = 49:54, Forecast))
+
+
+# Visualising the Forecasted Sales
+
+colnames(final_forecast_apacs)[2] <- 'Sales'
+final <- rbind(apacs, final_forecast_apacs)
+plot(final, type = 'l', main = 'Forecasted Sales for APAC Consumer')
+rect(xleft = 49, xright= 54, ybottom = 10000, ytop = 85000, density = 10, col = 'red')
+
+
+
+
+
+
+#___________________________________________________________________________
+#
+#--------------------------------------------------
+# 2) Forecasting for APAC.Consumer - Quantity
+#--------------------------------------------------
+
+
+apacq <- data.frame(cbind(as.numeric(1:nrow(APAC.Consumer)),APAC.Consumer$Quantity))
+
+colnames(apacq) <- c('Months', 'Quantity')
+
+apacq_total <- ts(apacq$Quantity)
+apacq_in <- apacq[1:42,]
+apacq_out <- apacq[43:48,]
+
+apacq_ts <- ts(apacq_in$Quantity)
+plot(apacq_ts)
+
+
+
+#Smoothing the series - Moving Average Smoothing
+
+w <- 1
+apacq_smooth <- filter(apacq_ts, 
+                       filter=rep(1/(2*w+1),(2*w+1)), 
+                       method='convolution', sides=2)
+
+#Smoothing left end of the time series
+
+diff <- apacq_smooth[w+2] - apacq_smooth[w+1]
+for (i in seq(w,1,-1)) {
+    apacq_smooth[i] <- apacq_smooth[i+1] - diff
+}
+
+#Smoothing right end of the time series
+
+n <- length(apacq_ts)
+diff <- apacq_smooth[n-w] - apacq_smooth[n-w-1]
+for (i in seq(n-w+1, n)) {
+    apacq_smooth[i] <- apacq_smooth[i-1] + diff
+}
+
+#Plot the smoothed time series
+
+timevals_in <- apacq_in$Months
+
+lines(apacq_smooth, col="red", lwd=2)
+
+
+#Trying Holt Winters
+
+plot(apacq_ts)
+
+cols <- c("red", "blue", "green", "black")
+alphas <- c(0.02, 0.1, 0.3,0.5,0.8)
+labels <- c(paste("alpha =", alphas), "Original")
+for (i in seq(1,length(alphas))) {
+    apacq_smoothhw <- HoltWinters(apacq_ts, alpha=alphas[i],
