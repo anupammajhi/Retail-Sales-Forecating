@@ -420,3 +420,78 @@ for (i in seq(w,1,-1)) {
 
 #Smoothing right end of the time series
 
+n <- length(apacq_ts)
+diff <- apacq_smooth[n-w] - apacq_smooth[n-w-1]
+for (i in seq(n-w+1, n)) {
+    apacq_smooth[i] <- apacq_smooth[i-1] + diff
+}
+
+#Plot the smoothed time series
+
+timevals_in <- apacq_in$Months
+
+lines(apacq_smooth, col="red", lwd=2)
+
+
+#Trying Holt Winters
+
+plot(apacq_ts)
+
+cols <- c("red", "blue", "green", "black")
+alphas <- c(0.02, 0.1, 0.3,0.5,0.8)
+labels <- c(paste("alpha =", alphas), "Original")
+for (i in seq(1,length(alphas))) {
+    apacq_smoothhw <- HoltWinters(apacq_ts, alpha=alphas[i],
+                                beta=FALSE, gamma=FALSE)
+    
+    lines(fitted(apacq_smoothhw)[,1], col=cols[i], lwd=2)
+}
+
+legend("bottomleft", labels, col=cols, lwd=2)
+
+plot(apacq_ts)
+apacq_smoothhw <- HoltWinters(apacq_ts, alpha=0.5,
+                            beta=FALSE, gamma=FALSE)
+
+lines(fitted(apacq_smoothhw)[,1], col='red', lwd=2)
+
+
+# Clearly Moving average does better smoothing as compared to Holt Winter. Hence, we will use Moving Average Smoothing
+
+
+
+#Building a model on the smoothed time series using classical decomposition
+#First, let's convert the time series to a dataframe
+
+apacq_smoothdf <- as.data.frame(cbind(timevals_in, as.vector(apacq_smooth)))
+colnames(apacq_smoothdf) <- c('Months', 'Quantity')
+
+#Now, let's fit a multiplicative model with trend and seasonality to the data
+#There appears to be little seasonality in the data. Trying various degree equations
+
+lmfit <- lm(Quantity ~  sin(0.5*Months) * poly(Months,1) *cos(0.5*Months), data=apacq_smoothdf)
+global_pred <- predict(lmfit, Months=timevals_in)
+summary(global_pred)
+
+plot(apacq_ts)
+lines(timevals_in, global_pred, col='blue', lwd=2)
+
+#Now, let's look at the locally predictable series
+#We will model it as an ARMA series
+
+local_pred <- apacq_in$Quantity-global_pred
+plot(local_pred, col='red', type = "l")
+acf(local_pred)
+acf(local_pred, type="partial")
+armafit <- auto.arima(local_pred)
+
+tsdiag(armafit)
+armafit
+
+#We'll check if the residual series is white noise
+
+resi <- local_pred-fitted(armafit)
+adf.test(resi,alternative = "stationary")
+kpss.test(resi)
+
+# Both tests confirm the series is Strongly stationary
