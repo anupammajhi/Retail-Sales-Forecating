@@ -542,3 +542,66 @@ rect(xleft = 42, xright= 48, ybottom = 100, ytop = 900, density = 10, col = 'gre
 
 #So, that was classical decomposition, now let's do an ARIMA fit
 
+autoarima <- auto.arima(apacq_ts)
+autoarima
+tsdiag(autoarima)
+plot(autoarima$x, col="black")
+lines(fitted(autoarima), col="red")
+
+#Again, let's check if the residual series is white noise
+
+resi_auto_arima <- apacq_ts - fitted(autoarima)
+
+adf.test(resi_auto_arima,alternative = "stationary")
+kpss.test(resi_auto_arima)
+
+#Also, let's evaluate the model using MAPE
+fcast_auto_arima <- predict(autoarima, n.ahead = 6)
+
+MAPE_auto_arima <- accuracy(fcast_auto_arima$pred,apacq_out[,2])[5]
+MAPE_auto_arima
+
+#Mape Value - 26.24
+#             -----
+
+
+#Lastly, let's plot the predictions along with original values, to
+#get a visual feel of the fit
+
+auto_arima_pred <- c(fitted(autoarima),ts(fcast_auto_arima$pred))
+
+
+plot(apacq_total, col = "black", main = "Forecast for Quantity - APAC.Consumer", ylab = 'Quantity', xlab = 'Months')
+lines(auto_arima_pred, col = "red")
+rect(xleft = 42, xright= 48, ybottom = 100, ytop = 900, density = 10, col = 'grey')
+
+
+# The Red Line in the grey rectangle predicts the Quantity for the months 49:54. 
+
+
+
+# Although the MAPE values of Auto Arima are slightly better, the fit from Classical Decomposition looks better, so we will use that model for the final forecast.
+
+
+# Forecasting for the next 6 Months
+
+#Local Component
+
+f_local <-  predict(armafit, n.ahead = 12)  
+f_local$pred
+
+f_fut <- f_local$pred[7:12]
+
+
+# Global Component
+
+future <- data.frame(Months = 49:54)
+
+global <- predict(lmfit, future)
+
+# Final Model = Local + Global
+
+Forecast <- global +f_fut
+
+
+final_forecast_apacq <- data.frame(cbind(Months = 49:54, Forecast))
