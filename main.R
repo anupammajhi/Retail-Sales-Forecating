@@ -531,13 +531,3 @@ MAPE_class_dec
 
 class_dec_pred <- c(ts(global_pred),ts(global_pred_out1))
 plot(apacq_total, col = "black", main = "Forecast for Quantity - APAC.Consumer", ylab = 'Quantity', xlab = 'Months')
-lines(class_dec_pred, col = "green")
-rect(xleft = 42, xright= 48, ybottom = 100, ytop = 900, density = 10, col = 'grey')
-
-
-# These are the forecasted quantities for the last six months.
-
-
-
-
-#So, that was classical decomposition, now let's do an ARIMA fit
