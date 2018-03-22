@@ -554,17 +554,3 @@ resi_auto_arima <- apacq_ts - fitted(autoarima)
 
 adf.test(resi_auto_arima,alternative = "stationary")
 kpss.test(resi_auto_arima)
-
-#Also, let's evaluate the model using MAPE
-fcast_auto_arima <- predict(autoarima, n.ahead = 6)
-
-MAPE_auto_arima <- accuracy(fcast_auto_arima$pred,apacq_out[,2])[5]
-MAPE_auto_arima
-
-#Mape Value - 26.24
-#             -----
-
-
-#Lastly, let's plot the predictions along with original values, to
-#get a visual feel of the fit
-
