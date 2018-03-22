@@ -568,16 +568,3 @@ MAPE_auto_arima
 #Lastly, let's plot the predictions along with original values, to
 #get a visual feel of the fit
 
-auto_arima_pred <- c(fitted(autoarima),ts(fcast_auto_arima$pred))
-
-
-plot(apacq_total, col = "black", main = "Forecast for Quantity - APAC.Consumer", ylab = 'Quantity', xlab = 'Months')
-lines(auto_arima_pred, col = "red")
-rect(xleft = 42, xright= 48, ybottom = 100, ytop = 900, density = 10, col = 'grey')
-
-
-# The Red Line in the grey rectangle predicts the Quantity for the months 49:54. 
-
-
-
-# Although the MAPE values of Auto Arima are slightly better, the fit from Classical Decomposition looks better, so we will use that model for the final forecast.
