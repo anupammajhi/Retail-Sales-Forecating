@@ -581,13 +581,3 @@ rect(xleft = 42, xright= 48, ybottom = 100, ytop = 900, density = 10, col = 'gre
 
 
 # Although the MAPE values of Auto Arima are slightly better, the fit from Classical Decomposition looks better, so we will use that model for the final forecast.
-
-
-# Forecasting for the next 6 Months
-
-#Local Component
-
-f_local <-  predict(armafit, n.ahead = 12)  
-f_local$pred
-
-f_fut <- f_local$pred[7:12]
