@@ -591,13 +591,3 @@ f_local <-  predict(armafit, n.ahead = 12)
 f_local$pred
 
 f_fut <- f_local$pred[7:12]
-
-
-# Global Component
-
-future <- data.frame(Months = 49:54)
-
-global <- predict(lmfit, future)
-
-# Final Model = Local + Global
-
