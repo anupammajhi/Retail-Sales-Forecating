@@ -541,18 +541,3 @@ rect(xleft = 42, xright= 48, ybottom = 100, ytop = 900, density = 10, col = 'gre
 
 
 #So, that was classical decomposition, now let's do an ARIMA fit
-
-autoarima <- auto.arima(apacq_ts)
-autoarima
-tsdiag(autoarima)
-plot(autoarima$x, col="black")
-lines(fitted(autoarima), col="red")
-
-#Again, let's check if the residual series is white noise
-
-resi_auto_arima <- apacq_ts - fitted(autoarima)
-
-adf.test(resi_auto_arima,alternative = "stationary")
-kpss.test(resi_auto_arima)
-
-#Also, let's evaluate the model using MAPE
