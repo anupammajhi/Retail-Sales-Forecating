@@ -807,3 +807,80 @@ MAPE_auto_arima
 #Mape Value - 30.13
 #             -----
 
+
+#Lastly, let's plot the predictions along with original values, to
+#get a visual feel of the fit
+
+auto_arima_pred <- c(fitted(autoarima),ts(fcast_auto_arima$pred))
+
+
+plot(euq_total, col = "black", main = "Forecast for Quantity - EU.Consumer", ylab = 'Quantity', xlab = 'Months')
+lines(auto_arima_pred, col = "red")
+rect(xleft = 42, xright= 48, ybottom = 100, ytop = 950, density = 10, col = 'grey')
+
+
+# The Red Line in the grey rectangle predicts the Quantity for the last six months. 
+
+
+# The fit from Classical Decomposition looks better, so we will use the results of classical decomposition for the final forecast.
+
+
+# Forecasting for the next 6 Months
+
+#Local Component
+
+f_local <-  predict(armafit, n.ahead = 12)  
+
+f_local$pred
+
+f_fut <- f_local$pred[7:12]
+
+
+# Global Component
+
+future <- data.frame(Months = 49:54)
+
+global <- predict(lmfit, future)
+
+# Final Model = Local + Global
+
+Forecast <- global +f_fut
+
+
+final_forecast_euq <- data.frame(cbind(Months = 49:54, Forecast))
+
+
+# Visualising the Forecasted Quantity
+
+colnames(final_forecast_euq)[2] <- 'Quantity'
+final <- rbind(euq, final_forecast_euq)
+plot(final, type = 'l', main = 'Forecasted Quantity for EU Consumer')
+rect(xleft = 49, xright= 54, ybottom = 100, ytop = 950, density = 10, col = 'red')
+
+
+
+
+#______________________________________________________________________________
+
+
+
+
+#--------------------------------------------------
+# 4) Forecasting for EU.Consumer - Sales
+#--------------------------------------------------
+
+
+eus <- data.frame(cbind(as.numeric(1:nrow(EU.Consumer)),EU.Consumer$Sales))
+
+colnames(eus) <- c('Months', 'Sales')
+
+eus_total <- ts(eus$Sales)
+eus_in <- eus[1:42,]
+eus_out <- eus[43:48,]
+
+eus_ts <- ts(eus_in$Sales)
+plot(eus_ts)
+
+
+
+#Smoothing the series - Moving Average Smoothing
