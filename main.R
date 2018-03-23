@@ -590,18 +590,3 @@ rect(xleft = 42, xright= 48, ybottom = 100, ytop = 900, density = 10, col = 'gre
 f_local <-  predict(armafit, n.ahead = 12)  
 f_local$pred
 
-f_fut <- f_local$pred[7:12]
-
-
-# Global Component
-
-future <- data.frame(Months = 49:54)
-
-global <- predict(lmfit, future)
-
-# Final Model = Local + Global
-
-Forecast <- global +f_fut
-
-
-final_forecast_apacq <- data.frame(cbind(Months = 49:54, Forecast))
