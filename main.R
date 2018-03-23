@@ -728,3 +728,82 @@ acf(local_pred)
 acf(local_pred, type="partial")
 armafit <- auto.arima(local_pred)
 
+tsdiag(armafit)
+armafit
+
+#We'll check if the residual series is white noise
+
+resi <- local_pred-fitted(armafit)
+adf.test(resi,alternative = "stationary")
+kpss.test(resi)
+qqnorm(resi) 
+
+
+# We see that the KPSS test Fails. Therefore, we use another test, the qq plot, and we can see that the plot is along the 45 degree line
+
+# Two tests confirm the series is Strongly stationary
+
+#Now, let's evaluate the model using MAPE
+#First, let's make a prediction for the last 6 months
+
+timevals_out <- euq_out[-2]
+
+# Local Component 
+
+# We add the local modelled component(model from arimafit) back to the global predicted part to predict final forecast.
+armafit
+f_local <-  predict(armafit, n.ahead = 6)
+f_local[[2]]
+
+f_local
+
+global_pred_out <- predict(lmfit,timevals_out) 
+global_pred_out1 <- global_pred_out+f_local[[1]]
+fcast <- global_pred_out1
+
+
+#Now, let's compare our prediction with the actual values, using MAPE
+
+MAPE_class_dec <- accuracy(fcast,euq_out[,2])[5]
+MAPE_class_dec
+
+#Mape Value - 31.07
+#             -----
+
+
+#Let's also plot the predictions along with original values, to
+#get a visual feel of the fit
+
+class_dec_pred <- c(ts(global_pred),ts(global_pred_out1))
+plot(euq_total, col = "black", main = "Forecast for Quantity - EU.Consumer", ylab = 'Quantity', xlab = 'Months')
+lines(class_dec_pred, col = "green")
+rect(xleft = 42, xright= 48, ybottom = 100, ytop = 950, density = 10, col = 'grey')
+
+
+
+
+
+#So, that was classical decomposition, now let's do an ARIMA fit
+
+autoarima <- auto.arima(euq_ts)
+autoarima
+tsdiag(autoarima)
+plot(autoarima$x, col="black")
+lines(fitted(autoarima), col="red")
+
+#Again, let's check if the residual series is white noise
+
+resi_auto_arima <- euq_ts - fitted(autoarima)
+
+adf.test(resi_auto_arima,alternative = "stationary")
+kpss.test(resi_auto_arima)
+
+#Also, let's evaluate the model using MAPE
+fcast_auto_arima <- predict(autoarima, n.ahead = 6)
+
+MAPE_auto_arima <- accuracy(fcast_auto_arima$pred,euq_out[,2])[5]
+MAPE_auto_arima
+
+#Mape Value - 30.13
+#             -----
+
