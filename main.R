@@ -576,17 +576,3 @@ lines(auto_arima_pred, col = "red")
 rect(xleft = 42, xright= 48, ybottom = 100, ytop = 900, density = 10, col = 'grey')
 
 
-# The Red Line in the grey rectangle predicts the Quantity for the months 49:54. 
-
-
-
-# Although the MAPE values of Auto Arima are slightly better, the fit from Classical Decomposition looks better, so we will use that model for the final forecast.
-
-
-# Forecasting for the next 6 Months
-
-#Local Component
-
-f_local <-  predict(armafit, n.ahead = 12)  
-f_local$pred
-
