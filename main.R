@@ -884,3 +884,70 @@ plot(eus_ts)
 
 
 #Smoothing the series - Moving Average Smoothing
+
+w <- 0.7
+eus_smooth <- filter(eus_ts, 
+                     filter=rep(1/(2*w+1),(2*w+1)), 
+                     method='convolution', sides=2)
+
+#Smoothing left end of the time series
+
+diff <- eus_smooth[w+2] - eus_smooth[w+1]
+for (i in seq(w,1,1)) {
+    eus_smooth[i] <- eus_smooth[i+1] - diff
+}
+
+#Smoothing right end of the time series
+
+n <- length(eus_ts)
+diff <- eus_smooth[n-w] - eus_smooth[n-w-1]
+for (i in seq(n-w+1, n)) {
+    eus_smooth[i] <- eus_smooth[i-1] + diff
+}
+
+#Plot the smoothed time series
+
+timevals_in <- eus_in$Months
+
+lines(eus_smooth, col="yellow", lwd=2)
+
+
+#Trying Holt Winters
+
+plot(eus_ts)
+
+cols <- c("red", "blue", "green", "black", "grey")
+alphas <- c(0.02, 0.1, 0.3,0.5,0.8)
+labels <- c(paste("alpha =", alphas), "Original")
+for (i in seq(1,length(alphas))) {
+    eus_smoothhw <- HoltWinters(eus_ts, alpha=alphas[i],
+                                beta=FALSE, gamma=FALSE)
+    
+    lines(fitted(eus_smoothhw)[,1], col=cols[i], lwd=2)
+}
+
+legend("bottomleft", labels, col=cols, lwd=2)
+
+plot(eus_ts)
+eus_smoothhw <- HoltWinters(eus_ts, alpha=0.6,
+                            beta=FALSE, gamma=FALSE)
+
+lines(fitted(eus_smoothhw)[,1], col='red', lwd=2)
+
+
+# Again, Moving average does better smoothing as compared to Holt Winter, so we will use Moving Average smoothing.
+
+
+#Building a model on the smoothed time series using classical decomposition
+#First, let's convert the time series to a dataframe
+
+eus_smoothdf <- as.data.frame(cbind(timevals_in, as.vector(eus_smooth)))
+colnames(eus_smoothdf) <- c('Months', 'Sales')
+
+#Now, let's fit a  model with trend and seasonality to the data
+#There appears to be little seasonality in the data. Trying various degree equations
+
+lmfit <- lm(Sales ~  sin(0.5*Months) * poly(Months,3) + cos(0.5*Months) * poly(Months,2)
+                       + sin(0.5*Months)*exp(0.0008*Months) + cos(0.5*Months)*exp(0.0008*Months),data=eus_smoothdf)
+
+global_pred <- predict(lmfit, Months=timevals_in)
