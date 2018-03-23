@@ -951,3 +951,79 @@ lmfit <- lm(Sales ~  sin(0.5*Months) * poly(Months,3) + cos(0.5*Months) * poly(M
                        + sin(0.5*Months)*exp(0.0008*Months) + cos(0.5*Months)*exp(0.0008*Months),data=eus_smoothdf)
 
 global_pred <- predict(lmfit, Months=timevals_in)
+summary(global_pred)
+
+plot(eus_ts)
+lines(timevals_in, global_pred, col='green', lwd=2)
+
+#Now, let's look at the locally predictable series
+#We will model it as an ARMA series
+
+local_pred <- eus_in$Sales-global_pred
+plot(local_pred, col='red', type = "l")
+acf(local_pred)
+acf(local_pred, type="partial")
+armafit <- auto.arima(local_pred)
+
+tsdiag(armafit)
+armafit
+
+#We'll check if the residual series is white noise
+
+resi <- local_pred-fitted(armafit)
+adf.test(resi,alternative = "stationary")
+kpss.test(resi)
+
+qqnorm(resi)
+
+# We see that the KPSS test Fails. Therefore, we use another test, the qq plot, and we can see that the plot is along the 45 degree line
+
+# Two tests confirm the series is Strongly stationary
+
+#Now, let's evaluate the model using MAPE
+#First, let's make a prediction for the last 6 months
+
+timevals_out <- eus_out[-2]
+
+# Local Component 
+
+# We add the local modelled component(model from arimafit) back to the global predicted part to predict final forecast
+
+armafit
+f_local <-  predict(armafit, n.ahead = 6)
+f_local[[2]]
+
+
+global_pred_out <- predict(lmfit,timevals_out) 
+global_pred_out1 <- global_pred_out+f_local[[1]]
+fcast <- global_pred_out1
+
+
+#Now, let's compare our prediction with the actual values, using MAPE
+
+MAPE_class_dec <- accuracy(fcast,eus_out[,2])[5]
+MAPE_class_dec
+
+#Let's also plot the predictions along with original values, to
+#get a visual feel of the fit
+
+class_dec_pred <- c(ts(global_pred),ts(global_pred_out1))
+plot(eus_total, col = "black", main = "Forecast for Sales - EU.Consumer", ylab = 'Sales', xlab = 'Months')
+lines(class_dec_pred, col = "green")
+rect(xleft = 42, xright= 48, ybottom = 8000, ytop = 70000, density = 10, col = 'grey')
+
+
+
+
+
+#So, that was classical decomposition, now let's do an ARIMA fit
+
+autoarima <- auto.arima(eus_ts)
+autoarima
+tsdiag(autoarima)
+plot(autoarima$x, col="black")
+lines(fitted(autoarima), col="red")
+
+#Again, let's check if the residual series is white noise
+
+resi_auto_arima <- eus_ts - fitted(autoarima)
