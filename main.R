@@ -566,3 +566,79 @@ MAPE_auto_arima
 
 
 #Lastly, let's plot the predictions along with original values, to
+#get a visual feel of the fit
+
+auto_arima_pred <- c(fitted(autoarima),ts(fcast_auto_arima$pred))
+
+
+plot(apacq_total, col = "black", main = "Forecast for Quantity - APAC.Consumer", ylab = 'Quantity', xlab = 'Months')
+lines(auto_arima_pred, col = "red")
+rect(xleft = 42, xright= 48, ybottom = 100, ytop = 900, density = 10, col = 'grey')
+
+
+# The Red Line in the grey rectangle predicts the Quantity for the months 49:54. 
+
+
+
+# Although the MAPE values of Auto Arima are slightly better, the fit from Classical Decomposition looks better, so we will use that model for the final forecast.
+
+
+# Forecasting for the next 6 Months
+
+#Local Component
+
+f_local <-  predict(armafit, n.ahead = 12)  
+f_local$pred
+
+f_fut <- f_local$pred[7:12]
+
+
+# Global Component
+
+future <- data.frame(Months = 49:54)
+
+global <- predict(lmfit, future)
+
+# Final Model = Local + Global
+
+Forecast <- global +f_fut
+
+
+final_forecast_apacq <- data.frame(cbind(Months = 49:54, Forecast))
+
+
+# Visualising the Forecasted Quantity
+
+colnames(final_forecast_apacq)[2] <- 'Quantity'
+final <- rbind(apacq, final_forecast_apacq)
+plot(final, type = 'l', main = 'Forecasted Quantity for APAC Consumer')
+rect(xleft = 49, xright= 54, ybottom = 100, ytop = 950, density = 10, col = 'red')
+
+
+
+
+#___________________________________________________________________________
+
+
+
+
+
+
+#--------------------------------------------------
+# 3) Forecasting for EU.Consumer - Quantity
+#--------------------------------------------------
+
+
+euq <- data.frame(cbind(as.numeric(1:nrow(EU.Consumer)),EU.Consumer$Quantity))
+
+colnames(euq) <- c('Months', 'Quantity')
+
+euq_total <- ts(euq$Quantity)
+euq_in <- euq[1:42,]
+euq_out <- euq[43:48,]
+
+euq_ts <- ts(euq_in$Quantity)
+plot(euq_ts)
+
+
+
