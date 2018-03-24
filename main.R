@@ -1014,16 +1014,3 @@ rect(xleft = 42, xright= 48, ybottom = 8000, ytop = 70000, density = 10, col = '
 
 
 
-
-
-#So, that was classical decomposition, now let's do an ARIMA fit
-
-autoarima <- auto.arima(eus_ts)
-autoarima
-tsdiag(autoarima)
-plot(autoarima$x, col="black")
-lines(fitted(autoarima), col="red")
-
-#Again, let's check if the residual series is white noise
-
-resi_auto_arima <- eus_ts - fitted(autoarima)
