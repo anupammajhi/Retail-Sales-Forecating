@@ -1088,3 +1088,28 @@ final_forecast_eus <- data.frame(cbind(Months = 49:54, Forecast))
 
 # Visualising the Forecasted Sales
 
+colnames(final_forecast_eus)[2] <- 'Sales'
+final <- rbind(eus, final_forecast_eus)
+plot(final, type = 'l', main = 'Forecasted Sales for EU Consumer')
+rect(xleft = 49, xright= 54, ybottom = 8000, ytop = 75000, density = 10, col = 'red')
+
+
+
+write.csv(final_forecast_apacs, 'final_forecast_apacs.csv')
+
+write.csv(final_forecast_apacq, 'final_forecast_apacq.csv')
+
+write.csv(final_forecast_eus, 'final_forecast_eus.csv')
+
+write.csv(final_forecast_euq, 'final_forecast_euq.csv')
+
+
+
+
+
+
+
+#___________________________________________________________________________
+#                               END
+#___________________________________________________________________________
+
